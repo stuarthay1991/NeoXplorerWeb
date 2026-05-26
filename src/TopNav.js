@@ -117,7 +117,7 @@ function TopNav() {
           margin-right: 10px;
         }
       `}</style>
-      <div className={classes.mainpane} style={{ fontFamily: 'Roboto', background: "#0073aa", color: "#0073aa", display: "flex", alignItems: "center", justifyContent: "space-between"}}>
+      <div id="neo-top-nav" className={classes.mainpane} style={{ fontFamily: 'Roboto', background: "#0073aa", color: "#0073aa", display: "flex", alignItems: "center", justifyContent: "space-between"}}>
         <div className={classes.cntr_special} onClick={onSelectSplash} style={{cursor: "pointer"}} title="Go to Splash Page">{oncoimg}</div>
         <div className={classes.mainpane_margin_type1}>
         </div>

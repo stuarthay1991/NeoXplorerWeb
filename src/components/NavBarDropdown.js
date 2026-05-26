@@ -10,6 +10,14 @@ import { Typography } from "@material-ui/core";
 import jsonGBM from "../gbmBasic.js";
 import jsonBLCA from "../BLCAbasic.js";
 import jsonBLCAsignature from "../BLCAsignature.js";
+import {
+  cancerDisplayNames,
+  NEO_SET_CANCER_TYPE_EVENT,
+  NEO_SET_CANCER_SIGNATURE_GROUP_EVENT,
+  isValidCancerTypeCode,
+} from "../constants/cancerTypes.js";
+import { NEO_SET_GENES_EVENT } from "../constants/navBarGenes.js";
+import { parseDelimitedInput } from "../utils/parseDelimitedInput.js";
 
 const StyledDropdown = withStyles({
   root: {
@@ -109,6 +117,46 @@ function Header({setViewPane, setPanCancerState, startingCancer, startingSignaur
         setCancerTypeState({"cancerType": e, "initialized": true});
     }
 
+    React.useEffect(() => {
+        const onChatCancerType = (event) => {
+            const cancerType = event?.detail?.cancerType;
+            if (isValidCancerTypeCode(cancerType)) {
+                setCancerTypeState({ cancerType, initialized: true });
+            }
+        };
+        window.addEventListener(NEO_SET_CANCER_TYPE_EVENT, onChatCancerType);
+        return () => window.removeEventListener(NEO_SET_CANCER_TYPE_EVENT, onChatCancerType);
+    }, []);
+
+    React.useEffect(() => {
+        const onChatCancerSignatureGroup = (event) => {
+            const cancerSignatureGroup = event?.detail?.cancerSignatureGroup;
+            if (isValidCancerTypeCode(cancerSignatureGroup)) {
+                setCancerSignatureGroupState({
+                    cancerType: cancerSignatureGroup,
+                    initialized: true,
+                });
+            }
+        };
+        window.addEventListener(
+            NEO_SET_CANCER_SIGNATURE_GROUP_EVENT,
+            onChatCancerSignatureGroup,
+        );
+        return () =>
+            window.removeEventListener(
+                NEO_SET_CANCER_SIGNATURE_GROUP_EVENT,
+                onChatCancerSignatureGroup,
+            );
+    }, []);
+
+    React.useEffect(() => {
+        window.neoNavBarContext = {
+            cancerType: cancerTypeState.cancerType,
+            cancerSignatureGroup: cancerSignatureGroupState.cancerType,
+            genes: geneState,
+        };
+    }, [cancerTypeState.cancerType, cancerSignatureGroupState.cancerType, geneState]);
+
     const cancerSignatureGroupSelectHandle = (e) => {
         setCancerSignatureGroupState({"cancerType": e, "initialized": true});
     }
@@ -188,46 +236,38 @@ function Header({setViewPane, setPanCancerState, startingCancer, startingSignaur
         }
     }
 
+    const applyGenesFilter = (geneList) => {
+        const pile_of_uids = Array.isArray(geneList) ? geneList : [];
+        if (pile_of_uids.length === 0) {
+            return;
+        }
+        const textarea = document.getElementById("clientinputgene");
+        if (textarea) {
+            textarea.value = pile_of_uids.join("\n");
+        }
+        setGeneState(pile_of_uids);
+    };
+
     const onChangeGene = (e) => {
-        var all_uids = document.getElementById("clientinputgene").value;
-        var delimiter = "\n";
-        if(all_uids.indexOf("\n") != -1 && all_uids.indexOf(",") == -1)
-        {
-          delimiter = "\n";
+        if (e.key !== "Enter") {
+            return;
         }
-        if(all_uids.indexOf("\n") == -1 && all_uids.indexOf(",") != -1)
-        {
-          delimiter = ",";
-        }
-        if(all_uids.indexOf("\n") != -1 && all_uids.indexOf(",") != -1)
-        {
-          if(all_uids.split(",").length > all_uids.split("\n").length)
-          {
-            delimiter = ",";
-            all_uids = all_uids.replace("\n", "");
-          }
-          else
-          {
-            delimiter = "\n";
-          }
-        }
+        const pile_of_uids = parseDelimitedInput(
+            document.getElementById("clientinputgene")?.value ?? "",
+        );
+        applyGenesFilter(pile_of_uids);
+    };
 
-        all_uids = all_uids.split(delimiter);
-
-        var pile_of_uids = [];
-
-        for(var i=0; i<all_uids.length; i++)
-        {
-          if(all_uids[i] != "")
-          {
-            pile_of_uids.push(all_uids[i]);
-          }
-        }
-        if(e.key == "Enter")
-        {
-          setGeneState(pile_of_uids);
-        }
-    }
+    React.useEffect(() => {
+        const onChatGenes = (event) => {
+            const genes = event?.detail?.genes;
+            if (Array.isArray(genes) && genes.length > 0) {
+                applyGenesFilter(genes);
+            }
+        };
+        window.addEventListener(NEO_SET_GENES_EVENT, onChatGenes);
+        return () => window.removeEventListener(NEO_SET_GENES_EVENT, onChatGenes);
+    }, []);
 
     const onSelectHandle = (e) => {
         setPageTypeState({"value": e.target.value, "initialized": true});
@@ -413,34 +453,6 @@ function Header({setViewPane, setPanCancerState, startingCancer, startingSignaur
         }
         prevSampleState.current = sampleState;
       }, [sampleState])
-
-    const cancerDisplayNames = {
-        "BLCA": "Bladder Cancer (TCGA)",
-        "BRCA": "Breast Cancer (TCGA)",
-        "CESC": "Cervical Squamous Cell Carcinoma (TCGA)",
-        "COAD": "Colon Cancer (TCGA)",
-        "ESCA": "Esophageal Cancer (TCGA)",
-        "GBM": "Glioblastoma (TCGA)",
-        "GTEX": "GTEX",
-        "HNSC": "Head and Neck Cancer (TCGA)",
-        "KICH": "Kidney Chromophobe (TCGA)",
-        "KIRC": "Kidney Renal Clear Cell Carcinoma (TCGA)",
-        "LGG": "Low-Grade Gliomas (TCGA)",
-        "LIHC": "Liver Cancer (TCGA)",
-        "LUAD": "Lung Cancer (TCGA)",
-        "LUSC": "Lung Squamous Cell Carcinoma (TCGA)",
-        "OV": "Ovarian Cancer (TCGA)",
-        "PAAD": "Pancreatic Cancer (TCGA)",
-        "PCPG": "Pheochromocytoma and paraganglioma (TCGA)",
-        "PRAD": "Primary Prostate Cancer (TCGA)",
-        "READ": "Rectal Cancer (TCGA)",
-        "SARC": "Bone and Connective Tissue Cancer (TCGA)",
-        "SKCM": "Skin Cancer (TCGA)",
-        "STAD": "Stomach Adenocarcinoma (TCGA)",
-        "TGCT": "Tenosynovial Giant Cell Tumors (TCGA)",
-        "THCA": "Thyroid Carcinoma (TCGA)",
-        "UCEC": "Uterine Serous Cancer (TCGA)"
-    };
 
     React.useEffect(() => {
         if(cancerSignatureGroupState.initialized == true)

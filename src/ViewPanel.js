@@ -32,6 +32,7 @@ import loadingGif from './images/loading.gif';
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import './css/sidebar.css';
+import ChatWindow from './chat/chatwindow.js';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -229,6 +230,100 @@ function updateOkmapTable(data, okmapTable, setOkmapTable){
   ];
   //console.log("new_row", new_row);
   setOkmapTable({curAnnots: new_row});
+}
+
+function uidConvertForHeatmap(uid) {
+  var parts = uid.split(":");
+  var secondComp = parts[2].split("|")[0];
+  return parts[0] + ":" + secondComp + "|" + parts[3];
+}
+
+const HEATMAP_ROW_LABEL_DIV = "HEATMAP_ROW_LABEL";
+let currentHeatmapRowLabelSelection = null;
+
+/** Row-label highlight (same behavior as OKMAP.setSelected). */
+function highlightHeatmapRowLabel(convertedUid) {
+  if (convertedUid == null) {
+    return;
+  }
+
+  if (currentHeatmapRowLabelSelection != null) {
+    var oldText = document.getElementById(
+      currentHeatmapRowLabelSelection.concat(HEATMAP_ROW_LABEL_DIV).concat("_id"),
+    );
+    if (oldText) {
+      d3.select(oldText)
+        .style("fill", "black")
+        .on("mouseover", function () {
+          d3.select(this).style("fill", "red");
+        })
+        .on("mouseout", function () {
+          d3.select(this).style("fill", "black");
+        });
+    }
+  }
+
+  var curText = document.getElementById(
+    convertedUid.concat(HEATMAP_ROW_LABEL_DIV).concat("_id"),
+  );
+  if (!curText) {
+    return;
+  }
+
+  d3.select(curText)
+    .style("fill", "green")
+    .on("mouseover", function () {
+      d3.select(this).style("fill", "green");
+    })
+    .on("mouseout", function () {
+      d3.select(this).style("fill", "green");
+    });
+
+  currentHeatmapRowLabelSelection = convertedUid;
+}
+
+/**
+ * Full heatmap row selection — same side effects as clicking a row label in OKMAP.
+ */
+function applyHeatmapRowSelection(data, handlers, options = {}) {
+  if (data == null || handlers == null) {
+    return false;
+  }
+
+  updateOkmapTable(data, handlers.okmapTable, handlers.setOkmapTable);
+  handlers.setSelectionState({ selection: data.uid });
+  gtexSend(data.examined_junction, handlers.setGtexState, handlers.gtexState);
+  var toex = data.examined_junction.split(":");
+  exonRequest(
+    toex[0],
+    data,
+    handlers.setViewState,
+    handlers.viewState,
+    handlers.exonPlotState,
+    handlers.setExonPlotState,
+  );
+  handlers.setPlotUIDstate({ fulldat: data });
+
+  const convertedUid =
+    options.convertedUid != null ? options.convertedUid : uidConvertForHeatmap(data.uid);
+  highlightHeatmapRowLabel(convertedUid);
+
+  return true;
+}
+
+function okmapSelectionHandlersFromProps(props) {
+  return {
+    setSelectionState: props.setSelectionState,
+    setGtexState: props.setGtexState,
+    gtexState: props.gtexState,
+    setViewState: props.setViewState,
+    viewState: props.viewState,
+    exonPlotState: props.exonPlotState,
+    setExonPlotState: props.setExonPlotState,
+    setPlotUIDstate: props.setPlotUIDstate,
+    okmapTable: props.okmapTable,
+    setOkmapTable: props.setOkmapTable,
+  };
 }
 
 function updateOkmapLabel(data){
@@ -1030,12 +1125,9 @@ class OKMAP extends React.Component {
       .style('fill', 'black')
       .text(converteduid)
       .on("click", function(){
-          updateOkmapTable(data, parent.props.okmapTable, parent.props.setOkmapTable);
-          parent.props.setSelectionState({selection: data["uid"]});
-          gtexSend(data["examined_junction"], parent.props.setGtexState, parent.props.gtexState);
-          var toex = data["examined_junction"].split(":");
-          exonRequest(toex[0], data, parent.props.setViewState, parent.props.viewState, parent.props.exonPlotState, parent.props.setExonPlotState);
-          parent.props.setPlotUIDstate({fulldat: data});
+          applyHeatmapRowSelection(data, okmapSelectionHandlersFromProps(parent.props), {
+            convertedUid: converteduid,
+          });
           parent.setSelected(converteduid);
       })
       .on("mouseover", function(){
@@ -1048,21 +1140,16 @@ class OKMAP extends React.Component {
     if(iterationNumber == 0)
     {
       //console.log("Matched: ", iterationNumber, data["uid"]);
-      updateOkmapTable(data, parent.props.okmapTable, parent.props.setOkmapTable);
-      parent.props.setSelectionState({selection: data["uid"]});
-      gtexSend(data["examined_junction"], parent.props.setGtexState, parent.props.gtexState);
-      var toex = data["examined_junction"].split(":");
-      exonRequest(toex[0], data, parent.props.setViewState, parent.props.viewState, parent.props.exonPlotState, parent.props.setExonPlotState);
-      parent.props.setPlotUIDstate({fulldat: data});
+      applyHeatmapRowSelection(data, okmapSelectionHandlersFromProps(parent.props), {
+        convertedUid: converteduid,
+      });
       parent.setSelected(converteduid);
     }
   }
 
   uidConvert(uid)
   {
-    var parts = uid.split(":");
-    var secondComp = parts[2].split("|")[0];
-    return parts[0] + ":" + secondComp + "|" + parts[3];
+    return uidConvertForHeatmap(uid);
   }
 
   tempRectAdd(y_origin, col_list, xscale)
@@ -1086,33 +1173,8 @@ class OKMAP extends React.Component {
 
   setSelected(id)
   {
-    var parent = this;
-
-    if(this.CURRENT_SELECTED_UID != null)
-    {
-    var old_text = document.getElementById((this.CURRENT_SELECTED_UID.concat(this.target_row_label_div).concat("_id")));
-    d3.select(old_text)
-      .style('fill', 'black')
-      .on("mouseover", function(){
-            d3.select(this).style("fill", "red");
-      })
-      .on("mouseout", function(){
-            d3.select(this).style("fill", "black");
-      });
-    }
-
-    var cur_text = document.getElementById((id.concat(this.target_row_label_div).concat("_id")));
-    d3.select(cur_text)
-      .style('fill', 'green')
-      .on("mouseover", function(){
-            d3.select(this).style("fill", "green");
-      })
-      .on("mouseout", function(){
-            d3.select(this).style("fill", "green");
-      });
-
+    highlightHeatmapRowLabel(id);
     this.CURRENT_SELECTED_UID = id;
-
   }
 
   componentDidUpdate (prevProps){
@@ -1384,6 +1446,9 @@ function ViewPanel(props) {
   global_cc = props.CC;
   global_OncospliceClusters = props.OncospliceClusters;
   global_trans = props.TRANS;
+
+  const rowLabels = (props.Data || []).map((row) => row.uid);
+
   /*
   var available_width = screen.width;
   var available_height = screen.height;
@@ -1435,6 +1500,44 @@ function ViewPanel(props) {
   }, [props.QueryExport["ui_field_dict"]]);*/
 
   const [okmapLabelState, setOkmapLabelState] = React.useState("NULL");
+
+  const selectHeatmapRowByUid = React.useCallback(
+    (uid) => {
+      if (uid == null) {
+        return false;
+      }
+      const row = (props.Data || []).find((entry) => entry && entry.uid === uid);
+      if (!row) {
+        console.warn("[ViewPanel] selectHeatmapRowByUid: no row for uid", uid);
+        return false;
+      }
+      return applyHeatmapRowSelection(row, {
+        setSelectionState,
+        setGtexState,
+        gtexState,
+        setViewState,
+        viewState,
+        exonPlotState,
+        setExonPlotState,
+        setPlotUIDstate,
+        okmapTable,
+        setOkmapTable,
+      });
+    },
+    [
+      props.Data,
+      setSelectionState,
+      setGtexState,
+      gtexState,
+      setViewState,
+      viewState,
+      exonPlotState,
+      setExonPlotState,
+      setPlotUIDstate,
+      okmapTable,
+      setOkmapTable,
+    ],
+  );
 
   //console.log("okmapLabelState", okmapLabelState);
 
@@ -1495,7 +1598,18 @@ function ViewPanel(props) {
   }
 
   return (
-    <><div style={{ fontFamily: 'Arial', display: 'flex', flexWrap: 'wrap' }}>
+    <>
+    <ChatWindow
+      docked
+      selectionState={selectionState}
+      setSelectionState={setSelectionState}
+      onSelectHeatmapRow={selectHeatmapRowByUid}
+      queryExport={props.QueryExport}
+      rowLabels={rowLabels}
+      columns={props.Cols}
+      chatApiBase={routeurl}
+    />
+    <div style={{ fontFamily: 'Arial', display: 'flex', flexWrap: 'wrap' }}>
       <ResizableBox
         className="box"
         width={panel_A.width}
@@ -1571,7 +1685,8 @@ function ViewPanel(props) {
           </Box>
           </div>
         </ResizableBox>
-      </div></>
+      </div>
+    </>
   );
 }
 

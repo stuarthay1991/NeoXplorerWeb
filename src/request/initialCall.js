@@ -52,10 +52,11 @@ function initalCall(arg, targeturl)
           var dateval = response["data"]["date"];
           var heatmapMatrix = response["data"]["rr"];
           var sampleNames = response["data"]["col_beds"];
+          var heatmapQuery = response["data"]["getHeatmapDataQuery"];
           var hierarchicalClusterColumns = response["data"]["cci"];
           var oncospliceSignatureClusterColumns = response["data"]["oncospliceClusterIndices"];
           var oncospliceSignatureClusterName = response["data"]["oncospliceClusterName"];
-          sampleUiRefresh(postData["data"]["cancerName"], heatmapMatrix, sampleNames, hierarchicalClusterColumns, oncospliceSignatureClusterColumns, oncospliceSignatureClusterName, exportView, callback, postData, pancancercallback);
+          sampleUiRefresh(postData["data"]["cancerName"], heatmapMatrix, sampleNames, hierarchicalClusterColumns, oncospliceSignatureClusterColumns, oncospliceSignatureClusterName, exportView, callback, postData, pancancercallback, heatmapQuery);
         }
         else
         {
@@ -70,7 +71,7 @@ function initalCall(arg, targeturl)
     })
 }
 
-function sampleUiRefresh(cancerType, heatmapMatrix, sampleNames, hierarchicalClusterColumns, oncospliceSignatureClusterColumns, oncospliceSignatureClusterName, exportView, callback, prevPostData, pancancercallback)
+function sampleUiRefresh(cancerType, heatmapMatrix, sampleNames, hierarchicalClusterColumns, oncospliceSignatureClusterColumns, oncospliceSignatureClusterName, exportView, callback, prevPostData, pancancercallback, heatmapQuery)
 {
     var postdata = {"data": {"cancerName": cancerType, "signature": prevPostData["data"]["signatures"]}};
     axios({
@@ -84,6 +85,7 @@ function sampleUiRefresh(cancerType, heatmapMatrix, sampleNames, hierarchicalClu
       exportView["cancer"] = cancerType;
       exportView["ui_field_dict"] = response["data"]["samples"];
       exportView["ui_field_range"] = response["data"]["range"];
+      exportView["heatmapQuery"] = heatmapQuery;
       //console.log(sampleNames, "sampleNames")
       //document.getElementById("HEATMAP_LABEL").style.opacity = 1;
       //document.getElementById("HEATMAP_CC").style.opacity = 1;

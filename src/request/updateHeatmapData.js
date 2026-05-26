@@ -61,12 +61,13 @@ function updateHeatmapData(arg, targeturl)
           var dateval = response["data"]["date"];
           var heatmapMatrix = response["data"]["rr"];
           var sampleNames = response["data"]["col_beds"];
+          var heatmapQuery = response["data"]["getHeatmapDataQuery"];
           var hierarchicalClusterColumns = response["data"]["cci"];
           var oncospliceSignatureClusterColumns = response["data"]["oncospliceClusterIndices"];
           var oncospliceSignatureClusterName = response["data"]["oncospliceClusterName"];
           console.log("oncospliceSignatureClusterName", oncospliceSignatureClusterName);
           console.log("oncospliceSignatureClusterColumns", oncospliceSignatureClusterColumns);
-          sampleUiRefresh(postData["data"]["cancerName"], heatmapMatrix, sampleNames, hierarchicalClusterColumns, oncospliceSignatureClusterColumns, oncospliceSignatureClusterName, exportView, callback, postData, pancancercallback, setSampleListState);
+          sampleUiRefresh(postData["data"]["cancerName"], heatmapMatrix, sampleNames, hierarchicalClusterColumns, oncospliceSignatureClusterColumns, oncospliceSignatureClusterName, exportView, callback, postData, pancancercallback, setSampleListState, heatmapQuery);
         }
         else
         {
@@ -89,7 +90,7 @@ function updateHeatmapData(arg, targeturl)
 
 }
 
-function sampleUiRefresh(cancerType, heatmapMatrix, sampleNames, hierarchicalClusterColumns, oncospliceSignatureClusterColumns, oncospliceSignatureClusterName, exportView, callback, prevPostData, pancancercallback, setSampleListState)
+function sampleUiRefresh(cancerType, heatmapMatrix, sampleNames, hierarchicalClusterColumns, oncospliceSignatureClusterColumns, oncospliceSignatureClusterName, exportView, callback, prevPostData, pancancercallback, setSampleListState, heatmapQuery)
 {
     var postdata = {"data": {"cancerName": cancerType, "signature": prevPostData["data"]["signatures"]}};
     axios({
@@ -103,6 +104,7 @@ function sampleUiRefresh(cancerType, heatmapMatrix, sampleNames, hierarchicalClu
       exportView["cancer"] = cancerType;
       exportView["ui_field_dict"] = response["data"]["samples"];
       exportView["ui_field_range"] = response["data"]["range"];
+      exportView["heatmapQuery"] = heatmapQuery;
       console.log("sampleNames", response["data"]["samples"])
       //document.getElementById("h3").style.display = "none";
       try{
