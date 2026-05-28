@@ -41,7 +41,7 @@ const cancerDisplayNames = {
   "UCEC": "Uterine Serous Cancer (TCGA)"
 };
 
-function PCHeader({setPanCancerState, startingCancer, startingSignature, startingSimple, startingSignatureList}){
+function PCHeader({setPanCancerState, startingCancer, startingSignature, startingSimple, startingSignatureList, onNavStateChange}){
     const [cancerTypeState, setCancerTypeState] = React.useState({"cancerType": startingCancer, "initialized": false});
     const [signatureState, setSignatureState] = React.useState({"signature": startingSignature, "simpleName": startingSimple, "oncocluster": startingSimple, "initialized": false});
     const [signatureListState, setSignatureListState] = React.useState(startingSignatureList);
@@ -92,6 +92,14 @@ function PCHeader({setPanCancerState, startingCancer, startingSignature, startin
             makeRequest("updateSignatureList", args);
         }
     }, [cancerSignatureGroupState])
+
+    // Publish pancancer cancer type selection to MainPanel (for chat context).
+    React.useEffect(() => {
+        if (typeof onNavStateChange !== "function") {
+            return;
+        }
+        onNavStateChange(cancerTypeState);
+    }, [cancerTypeState]);
 
     return(
       <div id="pc_dropdownOptionsDiv" style={{width: "120%"}}>

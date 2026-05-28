@@ -238,10 +238,16 @@ function ChatWindowLive({
   chatApiBase,
   selectionState,
   setSelectionState,
+  currentViewedPage,
   onSelectHeatmapRow,
   queryExport,
   rowLabels,
   columns,
+  tableForHeatmapSelectData,
+  pancancerCancerTypeState,
+  pancancerDoubleBarChartData,
+  pancancerConcordanceState,
+  pancancerVennState,
 }) {
   const [dockOpen, setDockOpen] = useState(true);
   const [input, setInput] = useState('');
@@ -253,6 +259,18 @@ function ChatWindowLive({
   rowLabelsRef.current = rowLabels;
   const columnsRef = useRef(columns);
   columnsRef.current = columns;
+  const currentViewedPageRef = useRef(currentViewedPage);
+  currentViewedPageRef.current = currentViewedPage;
+  const tableForHeatmapSelectDataRef = useRef(tableForHeatmapSelectData);
+  tableForHeatmapSelectDataRef.current = tableForHeatmapSelectData;
+  const pancancerCancerTypeStateRef = useRef(pancancerCancerTypeState);
+  pancancerCancerTypeStateRef.current = pancancerCancerTypeState;
+  const pancancerDoubleBarChartDataRef = useRef(pancancerDoubleBarChartData);
+  pancancerDoubleBarChartDataRef.current = pancancerDoubleBarChartData;
+  const pancancerConcordanceStateRef = useRef(pancancerConcordanceState);
+  pancancerConcordanceStateRef.current = pancancerConcordanceState;
+  const pancancerVennStateRef = useRef(pancancerVennState);
+  pancancerVennStateRef.current = pancancerVennState;
 
   const apiUrl = `${String(chatApiBase).replace(/\/$/, '')}${CHAT_API_PATH}`;
 
@@ -341,6 +359,12 @@ function ChatWindowLive({
             currentCancerSignatureGroup:
               getNeoNavBarContext().cancerSignatureGroup ?? null,
             currentGenes: getNeoNavBarContext().genes ?? null,
+            currentViewedPage: currentViewedPageRef.current ?? null,
+            tableForHeatmapSelectData: tableForHeatmapSelectDataRef.current ?? null,
+            pancancerCancerTypeState: pancancerCancerTypeStateRef.current ?? null,
+            pancancerDoubleBarChartData: pancancerDoubleBarChartDataRef.current ?? null,
+            pancancerConcordanceState: pancancerConcordanceStateRef.current ?? null,
+            pancancerVennState: pancancerVennStateRef.current ?? null,
           },
         }),
     }),
@@ -383,6 +407,12 @@ function ChatWindowLive({
  *   docked?: boolean;
  *   selectionState?: unknown;
  *   setSelectionState?: unknown;
+ *   currentViewedPage?: string;
+ *   tableForHeatmapSelectData?: unknown;
+ *   pancancerCancerTypeState?: unknown;
+ *   pancancerDoubleBarChartData?: unknown;
+ *   pancancerConcordanceState?: unknown;
+ *   pancancerVennState?: unknown;
  *   onSelectHeatmapRow?: (uid: string) => boolean;
  *   queryExport?: object;
  *   rowLabels?: string[];
@@ -395,6 +425,12 @@ function ChatWindow({
   docked = false,
   selectionState,
   setSelectionState,
+  currentViewedPage,
+  tableForHeatmapSelectData,
+  pancancerCancerTypeState,
+  pancancerDoubleBarChartData,
+  pancancerConcordanceState,
+  pancancerVennState,
   onSelectHeatmapRow,
   queryExport,
   rowLabels,
@@ -411,6 +447,12 @@ function ChatWindow({
         chatApiBase={chatApiBase}
         selectionState={selectionState}
         setSelectionState={setSelectionState}
+        currentViewedPage={currentViewedPage}
+        tableForHeatmapSelectData={tableForHeatmapSelectData}
+        pancancerCancerTypeState={pancancerCancerTypeState}
+        pancancerDoubleBarChartData={pancancerDoubleBarChartData}
+        pancancerConcordanceState={pancancerConcordanceState}
+        pancancerVennState={pancancerVennState}
         onSelectHeatmapRow={onSelectHeatmapRow}
         queryExport={queryExport}
         rowLabels={rowLabels}

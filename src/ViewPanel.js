@@ -32,7 +32,6 @@ import loadingGif from './images/loading.gif';
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import './css/sidebar.css';
-import ChatWindow from './chat/chatwindow.js';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -285,7 +284,7 @@ function highlightHeatmapRowLabel(convertedUid) {
 /**
  * Full heatmap row selection — same side effects as clicking a row label in OKMAP.
  */
-function applyHeatmapRowSelection(data, handlers, options = {}) {
+export function applyHeatmapRowSelection(data, handlers, options = {}) {
   if (data == null || handlers == null) {
     return false;
   }
@@ -1447,8 +1446,6 @@ function ViewPanel(props) {
   global_OncospliceClusters = props.OncospliceClusters;
   global_trans = props.TRANS;
 
-  const rowLabels = (props.Data || []).map((row) => row.uid);
-
   /*
   var available_width = screen.width;
   var available_height = screen.height;
@@ -1457,12 +1454,14 @@ function ViewPanel(props) {
   var available_height = window.innerHeight;
   //console.log("width and height", available_width, available_height);
   //console.log("VIEW DATA ENTERED:", props.Data);
-  const [viewState, setViewState] = React.useState({
+  const initialFilterName =
+    Object.entries(props.QueryExport["ui_field_dict"] || {})[0]?.[0] ?? null;
+  const [localViewState, setLocalViewState] = React.useState({
     toDownloadExon: undefined,
     toDownloadGeneModel: undefined,
     toDownloadJunc: undefined
   });
-  const [exonPlotState, setExonPlotState] = React.useState({
+  const [localExonPlotState, setLocalExonPlotState] = React.useState({
       exons: null,
       transcripts: null,
       junctions: null,
@@ -1478,13 +1477,16 @@ function ViewPanel(props) {
     dict: props.QueryExport["ui_field_dict"]
   }
 
-  const [selectionState, setSelectionState] = React.useState({selection: null});
-  const [filterState, setFilterState] = React.useState({filters: null, filterName: Object.entries(uifielddict.dict)[0][0], filterset: null});
-  const [plotUIDstate, setPlotUIDstate] = React.useState({fulldat: null});
-  const [okmapTable, setOkmapTable] = React.useState({curAnnots: okmapTableStartingData});
+  const [localSelectionState, setLocalSelectionState] = React.useState({selection: null});
+  const [localFilterState, setLocalFilterState] = React.useState({
+    filters: null,
+    filterName: initialFilterName,
+    filterset: null,
+  });
+  const [localPlotUIDstate, setLocalPlotUIDstate] = React.useState({fulldat: null});
+  const [localOkmapTable, setLocalOkmapTable] = React.useState({curAnnots: okmapTableStartingData});
   //console.log("okmaptable", okmapTable);
-  const [gtexState, setGtexState] = React.useState({gtexPlot: null});
-  console.log("Tell me the filters", filterState);
+  const [localGtexState, setLocalGtexState] = React.useState({gtexPlot: null});
   const [resizeState, setResizeState] = React.useState({heatmapBox: null, sidePanel: null});
   //const [uifielddict, setUifielddict] = React.useState({dict: props.QueryExport["ui_field_dict"]});
   
@@ -1499,45 +1501,25 @@ function ViewPanel(props) {
     }
   }, [props.QueryExport["ui_field_dict"]]);*/
 
-  const [okmapLabelState, setOkmapLabelState] = React.useState("NULL");
+  const [localOkmapLabelState, setLocalOkmapLabelState] = React.useState("NULL");
 
-  const selectHeatmapRowByUid = React.useCallback(
-    (uid) => {
-      if (uid == null) {
-        return false;
-      }
-      const row = (props.Data || []).find((entry) => entry && entry.uid === uid);
-      if (!row) {
-        console.warn("[ViewPanel] selectHeatmapRowByUid: no row for uid", uid);
-        return false;
-      }
-      return applyHeatmapRowSelection(row, {
-        setSelectionState,
-        setGtexState,
-        gtexState,
-        setViewState,
-        viewState,
-        exonPlotState,
-        setExonPlotState,
-        setPlotUIDstate,
-        okmapTable,
-        setOkmapTable,
-      });
-    },
-    [
-      props.Data,
-      setSelectionState,
-      setGtexState,
-      gtexState,
-      setViewState,
-      viewState,
-      exonPlotState,
-      setExonPlotState,
-      setPlotUIDstate,
-      okmapTable,
-      setOkmapTable,
-    ],
-  );
+  const viewState = props.viewState ?? localViewState;
+  const setViewState = props.setViewState ?? setLocalViewState;
+  const exonPlotState = props.exonPlotState ?? localExonPlotState;
+  const setExonPlotState = props.setExonPlotState ?? setLocalExonPlotState;
+  const selectionState = props.selectionState ?? localSelectionState;
+  const setSelectionState = props.setSelectionState ?? setLocalSelectionState;
+  const filterState = props.filterState ?? localFilterState;
+  const setFilterState = props.setFilterState ?? setLocalFilterState;
+  const plotUIDstate = props.plotUIDstate ?? localPlotUIDstate;
+  const setPlotUIDstate = props.setPlotUIDstate ?? setLocalPlotUIDstate;
+  const okmapTable = props.okmapTable ?? localOkmapTable;
+  const setOkmapTable = props.setOkmapTable ?? setLocalOkmapTable;
+  const gtexState = props.gtexState ?? localGtexState;
+  const setGtexState = props.setGtexState ?? setLocalGtexState;
+  const okmapLabelState = props.okmapLabelState ?? localOkmapLabelState;
+  const setOkmapLabelState = props.setOkmapLabelState ?? setLocalOkmapLabelState;
+  console.log("Tell me the filters", filterState);
 
   //console.log("okmapLabelState", okmapLabelState);
 
@@ -1599,16 +1581,6 @@ function ViewPanel(props) {
 
   return (
     <>
-    <ChatWindow
-      docked
-      selectionState={selectionState}
-      setSelectionState={setSelectionState}
-      onSelectHeatmapRow={selectHeatmapRowByUid}
-      queryExport={props.QueryExport}
-      rowLabels={rowLabels}
-      columns={props.Cols}
-      chatApiBase={routeurl}
-    />
     <div style={{ fontFamily: 'Arial', display: 'flex', flexWrap: 'wrap' }}>
       <ResizableBox
         className="box"

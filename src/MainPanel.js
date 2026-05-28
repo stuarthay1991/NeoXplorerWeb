@@ -19,6 +19,8 @@ import './App.css';
 import Header from './components/NavBarDropdown.js';
 import PCHeader from './components/PancancerNavigation.js';
 import ViewPanelWrapper from './ViewPanelWrapper.js';
+import ChatWindow from './chat/chatwindow.js';
+import { applyHeatmapRowSelection } from './ViewPanel.js';
 import { makeRequest } from './request/CancerDataManagement.js';
 //import Authentication from './Authentication.js';
 import PanCancerAnalysis from './PanCancerAnalysis.js';
@@ -57,6 +59,7 @@ function none()
 function MainPanel(props){
   const classes = useStyles();
   const tabstyle = spcTabStyles();
+  const chatApiBase = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
 
   //What is crucial here is the item "page." This contains the appendage to the base url that dictates what part of the website to view.
   const { match, history } = props;
@@ -106,6 +109,37 @@ function MainPanel(props){
 
   const [signatureListState, setSignatureListState] = React.useState({"None": "None"});
   const [sampleListState, setSampleListState] = React.useState({"None": ["None"]});
+  const [viewState, setViewState] = React.useState({
+    toDownloadExon: undefined,
+    toDownloadGeneModel: undefined,
+    toDownloadJunc: undefined
+  });
+  const [exonPlotState, setExonPlotState] = React.useState({
+    exons: null,
+    transcripts: null,
+    junctions: null,
+    in_data: null,
+    scaled: false,
+    targetdiv: "supp1",
+    downscale: 1
+  });
+  const [selectionState, setSelectionState] = React.useState({selection: null});
+  const [filterState, setFilterState] = React.useState({
+    filters: null,
+    filterName: null,
+    filterset: null,
+  });
+  const [plotUIDstate, setPlotUIDstate] = React.useState({fulldat: null});
+  const [okmapTable, setOkmapTable] = React.useState({
+    curAnnots: [{ name: '-none selected-', value: '-none selected-' }],
+  });
+  const [gtexState, setGtexState] = React.useState({gtexPlot: null});
+  const [okmapLabelState, setOkmapLabelState] = React.useState("NULL");
+  const [tableForHeatmapSelectData, setTableForHeatmapSelectData] = React.useState(null);
+  const [pancancerCancerTypeState, setPancancerCancerTypeState] = React.useState(null);
+  const [pancancerDoubleBarChartData, setPancancerDoubleBarChartData] = React.useState(null);
+  const [pancancerConcordanceState, setPancancerConcordanceState] = React.useState(null);
+  const [pancancerVennState, setPancancerVennState] = React.useState(null);
 
   if(process.env.NODE_ENV == "build")
   {
@@ -192,6 +226,20 @@ function MainPanel(props){
     }
   }, [mpstate.value])
 
+  React.useEffect(() => {
+    const nextFilterName =
+      Object.entries(mpstate.viewpaneobj?.export?.ui_field_dict || {})[0]?.[0] ?? null;
+    if (nextFilterName == null) {
+      return;
+    }
+    setFilterState({
+      filters: null,
+      filterName: nextFilterName,
+      filterset: null,
+    });
+    setOkmapLabelState("NULL");
+  }, [mpstate.viewpaneobj]);
+
   //Fetch data from the heatmap
   /*React.useEffect(() => {
     console.log("mpstate updating...", mpstate.viewpaneobj)
@@ -208,6 +256,56 @@ function MainPanel(props){
   }*/
 
   console.log(params, props.pagelist, "params");
+  const currentHeatmapData = mpstate.viewpaneobj?.heatmapInputData || [];
+  const currentHeatmapColumns = mpstate.viewpaneobj?.inCols || [];
+  const currentQueryExport = mpstate.viewpaneobj?.export || {};
+  const currentRowLabels = currentHeatmapData.map((row) => row.uid);
+  const currentTableForHeatmapSelectData =
+    page === "tableforheatmapselect" ? tableForHeatmapSelectData : null;
+  const currentPancancerCancerTypeState =
+    page === "pancancer" ? pancancerCancerTypeState : null;
+  const currentPancancerDoubleBarChartData =
+    page === "pancancer" ? pancancerDoubleBarChartData : null;
+  const currentPancancerConcordanceState =
+    page === "pancancer" ? pancancerConcordanceState : null;
+  const currentPancancerVennState = page === "pancancer" ? pancancerVennState : null;
+  const selectHeatmapRowByUid = React.useCallback(
+    (uid) => {
+      if (uid == null) {
+        return false;
+      }
+      const row = currentHeatmapData.find((entry) => entry && entry.uid === uid);
+      if (!row) {
+        console.warn("[MainPanel] selectHeatmapRowByUid: no row for uid", uid);
+        return false;
+      }
+      return applyHeatmapRowSelection(row, {
+        setSelectionState,
+        setGtexState,
+        gtexState,
+        setViewState,
+        viewState,
+        exonPlotState,
+        setExonPlotState,
+        setPlotUIDstate,
+        okmapTable,
+        setOkmapTable,
+      });
+    },
+    [
+      currentHeatmapData,
+      setSelectionState,
+      setGtexState,
+      gtexState,
+      setViewState,
+      viewState,
+      exonPlotState,
+      setExonPlotState,
+      setPlotUIDstate,
+      okmapTable,
+      setOkmapTable,
+    ],
+  );
   var setCoord = undefined;
   var setGene = undefined;
   if(props.pagelist.length <= 1 && (page == "explore"))
@@ -271,6 +369,22 @@ function MainPanel(props){
   //
   return (
     <div className={classes.root} style={{ fontFamily: 'Roboto'}}>
+      <ChatWindow
+        docked
+        selectionState={selectionState}
+        setSelectionState={setSelectionState}
+        currentViewedPage={page}
+        onSelectHeatmapRow={selectHeatmapRowByUid}
+        queryExport={currentQueryExport}
+        rowLabels={currentRowLabels}
+        columns={currentHeatmapColumns}
+        tableForHeatmapSelectData={currentTableForHeatmapSelectData}
+        pancancerCancerTypeState={currentPancancerCancerTypeState}
+        pancancerDoubleBarChartData={currentPancancerDoubleBarChartData}
+        pancancerConcordanceState={currentPancancerConcordanceState}
+        pancancerVennState={currentPancancerVennState}
+        chatApiBase={chatApiBase}
+      />
       <div id="navBarHolder" className={classes.demo2}>
         <div className={classes.tabholder}>
         <div>
@@ -281,7 +395,13 @@ function MainPanel(props){
           startingSampleList={sampleListState}
           startingSignature={signature} 
           startingSimple={simple}/>}
-          {page === 'pancancer' && <PCHeader setPanCancerState={setPanCancerState} startingCancer={options}/>}
+          {page === 'pancancer' && (
+            <PCHeader
+              setPanCancerState={setPanCancerState}
+              startingCancer={options}
+              onNavStateChange={setPancancerCancerTypeState}
+            />
+          )}
         </div>
         </div>
       </div>
@@ -289,7 +409,26 @@ function MainPanel(props){
       <div id="initialHeatmapLoadingDiv" style={{display: "block", margin: 20}}>
         {loading_Gif}
       </div>
-      {page === 'explore' && <ViewPanelWrapper entrydata={mpstate.viewpaneobj} validate={indexToTabName[page]}/>}
+      {page === 'explore' && <ViewPanelWrapper
+        entrydata={mpstate.viewpaneobj}
+        validate={indexToTabName[page]}
+        viewState={viewState}
+        setViewState={setViewState}
+        gtexState={gtexState}
+        setGtexState={setGtexState}
+        exonPlotState={exonPlotState}
+        setExonPlotState={setExonPlotState}
+        selectionState={selectionState}
+        setSelectionState={setSelectionState}
+        filterState={filterState}
+        setFilterState={setFilterState}
+        plotUIDstate={plotUIDstate}
+        setPlotUIDstate={setPlotUIDstate}
+        okmapTable={okmapTable}
+        setOkmapTable={setOkmapTable}
+        okmapLabelState={okmapLabelState}
+        setOkmapLabelState={setOkmapLabelState}
+      />}
       </div>
       <div id="splashpanel" style={{display: mpstate.value === 0 ? displayvalue1 : displayvalue2}}>
         <Splash />
@@ -309,12 +448,28 @@ function MainPanel(props){
       <div id='tableforheatmapselectpanel' style={{display: mpstate.value === 4 ? displayvalue1 : displayvalue2}}>
       {
         page === 'tableforheatmapselect' && (
-        <TableForHeatmapSelect postedCancer={options} postedAnnotation={signature}/>
+        <TableForHeatmapSelect
+          postedCancer={options}
+          postedAnnotation={signature}
+          onTableDataChange={setTableForHeatmapSelectData}
+        />
         )
         }
       </div>
       <div id="pancancerpanel" style={{display: mpstate.value === 3 ? displayvalue1 : displayvalue2}}>
-      {page === 'pancancer' && <PanCancerAnalysis clusterLength={panCancerState.clusterLength} tableData={panCancerState.tableData} cancerName={panCancerState.cancer} geneCount={panCancerState.uniqueGenesPerSignature}/>}
+      {page === 'pancancer' && (
+        <PanCancerAnalysis
+          clusterLength={panCancerState.clusterLength}
+          tableData={panCancerState.tableData}
+          cancerName={panCancerState.cancer}
+          geneCount={panCancerState.uniqueGenesPerSignature}
+          onDoubleBarChartDataChange={setPancancerDoubleBarChartData}
+          onPancancerAnalysisStateChange={({ concordanceState, vennState }) => {
+            setPancancerConcordanceState(concordanceState);
+            setPancancerVennState(vennState);
+          }}
+        />
+      )}
       </div>
       <div id="aboutpanel" style={{display: "none", backgroundColor: "#0f6a8b"}}>
         <AboutUs />

@@ -83,6 +83,22 @@ class ViewPanelWrapper extends React.Component {
                       CC={this.state.inCC} 
                       OncospliceClusters={this.state.inOncospliceClusters} 
                       TRANS={this.state.inTRANS}
+                      viewState={this.props.viewState}
+                      setViewState={this.props.setViewState}
+                      gtexState={this.props.gtexState}
+                      setGtexState={this.props.setGtexState}
+                      exonPlotState={this.props.exonPlotState}
+                      setExonPlotState={this.props.setExonPlotState}
+                      selectionState={this.props.selectionState}
+                      setSelectionState={this.props.setSelectionState}
+                      filterState={this.props.filterState}
+                      setFilterState={this.props.setFilterState}
+                      plotUIDstate={this.props.plotUIDstate}
+                      setPlotUIDstate={this.props.setPlotUIDstate}
+                      okmapTable={this.props.okmapTable}
+                      setOkmapTable={this.props.setOkmapTable}
+                      okmapLabelState={this.props.okmapLabelState}
+                      setOkmapLabelState={this.props.setOkmapLabelState}
           />
         )}
       </div>

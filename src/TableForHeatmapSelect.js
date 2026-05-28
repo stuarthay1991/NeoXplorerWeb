@@ -598,6 +598,18 @@ function TableForHeatmapSelect(props) {
         }
     }, [])
 
+    // Publish raw/processed table rows to parent (e.g. MainPanel) for chat context.
+    React.useEffect(() => {
+        if (typeof props.onTableDataChange !== "function") {
+            return;
+        }
+        if (tableState.data == undefined) {
+            props.onTableDataChange(null);
+            return;
+        }
+        props.onTableDataChange(tableState.data);
+    }, [tableState.data]);
+
     // Add search filter function
     const filterData = (data, searchTerm) => {
         if (!searchTerm.trim()) return data;

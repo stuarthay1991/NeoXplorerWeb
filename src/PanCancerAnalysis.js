@@ -832,6 +832,27 @@ function PanCancerAnalysis(props){
     }
     }, [props.cancerName])
 
+    React.useEffect(() => {
+        if (typeof props.onDoubleBarChartDataChange !== "function") {
+            return;
+        }
+        props.onDoubleBarChartDataChange({
+            cluster: doubleBarChartData.cluster,
+            gene: doubleBarChartData.gene,
+            key: doubleBarChartData.key,
+        });
+    }, [doubleBarChartData]);
+
+    React.useEffect(() => {
+        if (typeof props.onPancancerAnalysisStateChange !== "function") {
+            return;
+        }
+        props.onPancancerAnalysisStateChange({
+            concordanceState,
+            vennState,
+        });
+    }, [concordanceState, vennState]);
+
     var panel_CancerSummary = {
         width: 0.235 * available_width,
         height: 0.93 * available_height,
