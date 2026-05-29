@@ -869,22 +869,27 @@ class OKMAP_LABEL extends React.Component {
       tempnode.innerHTML = "";
       this.baseSVG("100%", 115);
       this.writeBase(this.props.column_names, 115, this.props.xscale);
-      
+
+      var firstDictKey = Object.entries(this.props.uifielddict.dict)[0]?.[0];
+      if (firstDictKey == null) {
+        return null;
+      }
+
       if(this.props.okmapLabelState != "NULL")
       {
         this.writeBlocks(this.props.okmapLabelState, this.props.xscale, this.props.column_names);
-        
-        // Optimized metarepost call
-        var filterName = this.props.okmapLabelState["sampleFilterName"];
-        var firstDictKey = Object.entries(this.props.uifielddict.dict)[0][0];
-        var shouldUseFilterName = firstDictKey === "fusion";
-        
-        metarepost(
-          shouldUseFilterName ? filterName : firstDictKey, 
-          this.props.setFilterState, 
-          this.props.setOkmapLabelState
-        );
       }
+
+      var filterName = this.props.okmapLabelState != "NULL"
+        ? this.props.okmapLabelState["sampleFilterName"]
+        : firstDictKey;
+      var shouldUseFilterName = firstDictKey === "fusion";
+
+      metarepost(
+        shouldUseFilterName ? filterName : firstDictKey,
+        this.props.setFilterState,
+        this.props.setOkmapLabelState
+      );
       return null;
     }
   }

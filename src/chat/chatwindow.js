@@ -11,6 +11,7 @@ import {
   getNeoNavBarContext,
 } from '../constants/cancerTypes.js';
 import { dispatchGenesSelection } from '../constants/navBarGenes.js';
+import { dispatchSignatureSelection } from '../constants/navBarSignature.js';
 
 const WELCOME_TEXT =
   "Hello! I'm the NeoXplorer chatbot assistant! How can I help you today?";
@@ -331,6 +332,17 @@ function ChatWindowLive({
             console.warn('[chat] could not apply gene filter', genes);
           }
         }
+        return;
+      }
+      if (part.type === 'data-SetSignature') {
+        console.log('[chat] data-SetSignature', part.data);
+        const { ok, signature, displayName } = part.data ?? {};
+        if (ok && signature != null) {
+          const applied = dispatchSignatureSelection({ signature, simpleName: displayName });
+          if (!applied) {
+            console.warn('[chat] could not apply signature', signature);
+          }
+        }
       }
     },
     transport: new DefaultChatTransport({
@@ -359,6 +371,9 @@ function ChatWindowLive({
             currentCancerSignatureGroup:
               getNeoNavBarContext().cancerSignatureGroup ?? null,
             currentGenes: getNeoNavBarContext().genes ?? null,
+            currentSignature: getNeoNavBarContext().signature ?? null,
+            currentSignatureDisplayName: getNeoNavBarContext().signatureDisplayName ?? null,
+            signatureList: getNeoNavBarContext().signatureList ?? null,
             currentViewedPage: currentViewedPageRef.current ?? null,
             tableForHeatmapSelectData: tableForHeatmapSelectDataRef.current ?? null,
             pancancerCancerTypeState: pancancerCancerTypeStateRef.current ?? null,

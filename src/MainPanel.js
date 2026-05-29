@@ -237,7 +237,6 @@ function MainPanel(props){
       filterName: nextFilterName,
       filterset: null,
     });
-    setOkmapLabelState("NULL");
   }, [mpstate.viewpaneobj]);
 
   //Fetch data from the heatmap

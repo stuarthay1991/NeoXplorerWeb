@@ -17,6 +17,7 @@ import {
   isValidCancerTypeCode,
 } from "../constants/cancerTypes.js";
 import { NEO_SET_GENES_EVENT } from "../constants/navBarGenes.js";
+import { NEO_SET_SIGNATURE_EVENT } from "../constants/navBarSignature.js";
 import { parseDelimitedInput } from "../utils/parseDelimitedInput.js";
 
 const StyledDropdown = withStyles({
@@ -154,8 +155,53 @@ function Header({setViewPane, setPanCancerState, startingCancer, startingSignaur
             cancerType: cancerTypeState.cancerType,
             cancerSignatureGroup: cancerSignatureGroupState.cancerType,
             genes: geneState,
+            signature: signatureState.signature,
+            signatureDisplayName: signatureState.simpleName,
+            signatureList: signatureListState,
         };
-    }, [cancerTypeState.cancerType, cancerSignatureGroupState.cancerType, geneState]);
+    }, [
+        cancerTypeState.cancerType,
+        cancerSignatureGroupState.cancerType,
+        geneState,
+        signatureState.signature,
+        signatureState.simpleName,
+        signatureListState,
+    ]);
+
+    const applySignatureSelection = (key, displayName) => {
+        var selectedOncocluster = displayName;
+        if (selectedOncocluster != undefined) {
+            if (selectedOncocluster.indexOf(" (") != -1) {
+                selectedOncocluster = selectedOncocluster.split(" (")[0];
+            }
+        } else {
+            selectedOncocluster = "R1-V2";
+        }
+        setSignatureState({
+            signature: key,
+            simpleName: displayName,
+            oncocluster: selectedOncocluster,
+            initialized: true,
+        });
+    };
+
+    React.useEffect(() => {
+        const onChatSignature = (event) => {
+            const signature = event?.detail?.signature;
+            const simpleName = event?.detail?.simpleName;
+            if (typeof signature !== "string" || signature.trim() === "") {
+                return;
+            }
+            const displayName =
+                typeof simpleName === "string" && simpleName.trim() !== ""
+                    ? simpleName
+                    : signatureListState[signature] ?? signature;
+            applySignatureSelection(signature, displayName);
+        };
+        window.addEventListener(NEO_SET_SIGNATURE_EVENT, onChatSignature);
+        return () =>
+            window.removeEventListener(NEO_SET_SIGNATURE_EVENT, onChatSignature);
+    }, [signatureListState]);
 
     const cancerSignatureGroupSelectHandle = (e) => {
         setCancerSignatureGroupState({"cancerType": e, "initialized": true});
@@ -163,24 +209,11 @@ function Header({setViewPane, setPanCancerState, startingCancer, startingSignaur
 
     const signatureSelectHandle = (e) => {
         //console.log("signature selected: ", e);
-        var selectedOncocluster = e[1];
-        if(selectedOncocluster != undefined)
-        {
-          if(selectedOncocluster.indexOf(" (") != -1)
-          {
-            selectedOncocluster = selectedOncocluster.split(" (")[0];
-          }
-        }
-        else
-        {
-          selectedOncocluster = "R1-V2";
-        }
         let simpleName = e[1];
-        if(e[1] == undefined)
-        {
-          simpleName = e[0];
+        if (e[1] == undefined) {
+            simpleName = e[0];
         }
-        setSignatureState({"signature": e[0], "simpleName": e[1], "oncocluster": selectedOncocluster, "initialized": true});
+        applySignatureSelection(e[0], simpleName);
     }
 
     const sampleMenuPopulate = (e) => {
