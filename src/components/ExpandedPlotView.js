@@ -5,13 +5,13 @@ import { useLayoutEffect, useReducer, useRef } from "react";
 import { createPortal } from "react-dom";
 import Box from '@material-ui/core/Box';
 import { oncospliceClusterViolinPlot } from '../plots/oncospliceClusterViolinPlotPanel.js'
-import { isBuild } from '../utilities/constants.js';
+import { apiBaseUrl } from '../utilities/constants.js';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import GetAppIcon from '@material-ui/icons/GetApp.js';
 
 const spboxProps = {border: 3, margin: 3};
 
-var routeurl = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
+var routeurl = apiBaseUrl;
 
 export function ExpandedPlotViewButton(props)
 {

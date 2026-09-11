@@ -108,7 +108,7 @@ async function submitTableForm()
     }
 
     try {
-        var addressBarValue = 'https://www.altanalyze.org/ICGS/Oncosplice/neo/index.html/'.concat(addressBarPageRoot).concat('/').concat(cancerElement).concat('/').concat(signatureSend).concat('/None').concat("/").concat(geneSend).concat("/").concat(coordinateSend);
+        var addressBarValue = 'https://www.altanalyze.org/ICGS/Oncosplice/smart/index.html/'.concat(addressBarPageRoot).concat('/').concat(cancerElement).concat('/').concat(signatureSend).concat('/None').concat("/").concat(geneSend).concat("/").concat(coordinateSend);
         window.location.href = addressBarValue;
     }
     catch (error) {
@@ -192,7 +192,7 @@ async function submitHeatmapForm() {
                     console.log('Success:', Object.values(data.signatureTranslate)[0]);
                     const signatureElement = Object.keys(data.signatureTranslate)[0];
                     const simpleElement = Object.values(data.signatureTranslate)[0];
-                    var addressBarValue = 'https://www.altanalyze.org/ICGS/Oncosplice/neo/index.html/'.concat(addressBarPageRoot).concat('/').concat(cancerElement).concat("/").concat(signatureElement).concat("/").concat(simpleElement).concat("/").concat(geneSend).concat("/").concat(coordinateSend);
+                    var addressBarValue = 'https://www.altanalyze.org/ICGS/Oncosplice/smart/index.html/'.concat(addressBarPageRoot).concat('/').concat(cancerElement).concat("/").concat(signatureElement).concat("/").concat(simpleElement).concat("/").concat(geneSend).concat("/").concat(coordinateSend);
                     console.log('addval', addressBarValue);
                     window.location.href = addressBarValue;
                 } else {

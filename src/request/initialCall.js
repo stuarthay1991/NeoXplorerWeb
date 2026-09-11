@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { isBuild } from '../utilities/constants.js';
+import { apiBaseUrl } from '../utilities/constants.js';
 
-var routeurl = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
+var routeurl = apiBaseUrl;
 
 function initalCall(arg, targeturl)
 {
@@ -93,8 +93,6 @@ function sampleUiRefresh(cancerType, heatmapMatrix, sampleNames, hierarchicalClu
       //document.getElementById("HEATMAP_0").style.opacity = 1;
       //document.getElementById("HEATMAP_ROW_LABEL").style.opacity = 1;
       //document.getElementById("heatmapLoadingDiv").style.display = "none";
-      document.getElementById("initialHeatmapLoadingDiv").style.display = "none";
-      //console.log("updating view panel with: ", cancerType, heatmapMatrix, sampleNames, hierarchicalClusterColumns, oncospliceSignatureClusterColumns, oncospliceSignatureClusterName, exportView, prevPostData)
       updateSignature(heatmapMatrix, sampleNames, hierarchicalClusterColumns, oncospliceSignatureClusterColumns, oncospliceSignatureClusterName, exportView, callback);
       //pancancercallback({"DEtableData": response["data"]["pancancerDE"], "tableData": response["data"]["pancancersignature"], "clusterLength": response["data"]["uniqueclusters"], "cancer": cancerType, "uniqueGenesPerSignature": response["data"]["pancancerGeneCount"]});
     })

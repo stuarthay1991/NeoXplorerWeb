@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
-import { isBuild } from '../utilities/constants.js';
+import { apiBaseUrl } from '../utilities/constants.js';
 
-var routeurl = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
+var routeurl = apiBaseUrl;
 
 function defaultQuery(arg, targeturl)
 {
@@ -59,7 +59,7 @@ function defaultQuery(arg, targeturl)
 
 function defaultQueryUiFields(splicingreturned, splicingcols, splicingcc, splicingrpsi, splicingtrans, exp, callback, doc, targeturl, pancancercallback)
 {
-  var postdata = {"data": {"cancerName": "BLCA", "signature": "psi_r3_v25_vs_others"}};
+  var postdata = {"data": {"cancerName": "BLCA", "signature": "psi_r3_v25_vs_others", "includePancancer": false}};
   axios({
     method: "post",
     data: postdata,
@@ -73,7 +73,6 @@ function defaultQueryUiFields(splicingreturned, splicingcols, splicingcc, splici
     console.log("fer4", response["data"]["pancancersignature"]);
     console.log("fer5", response["data"]);
     callback(splicingreturned, splicingcols, splicingcc, splicingrpsi, splicingtrans, exp);
-    pancancercallback({"DEtableData": response["data"]["pancancerDE"], "tableData": response["data"]["pancancersignature"], "clusterLength": response["data"]["uniqueclusters"], "cancer": "BLCA", "uniqueGenesPerSignature": response["data"]["pancancerGeneCount"]});
   })
 }
 

@@ -1,7 +1,17 @@
 import axios from 'axios';
-import { isBuild } from '../utilities/constants.js';
+import { apiBaseUrl } from '../utilities/constants.js';
+import { beginHeatmapLoadingSession, resetHeatmapLoadingProgress, setHeatmapCoreLoading, setHeatmapLoadingProgress } from '../heatmapLoadingState.js';
 
-var routeurl = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
+var routeurl = apiBaseUrl;
+
+function logRequestDuration(label, startTime) {
+  var seconds = (performance.now() - startTime) / 1000;
+  console.log(label + " request completed in " + seconds.toFixed(3) + " seconds");
+}
+
+function isPancancerPage() {
+  return /\/pancancer(\/|$)/.test(window.location.pathname);
+}
 
 function updateHeatmapData(arg, targeturl)
 {
@@ -21,13 +31,7 @@ function updateHeatmapData(arg, targeturl)
     //document.getElementById("LoadingStatusDisplay").style.display = "block";*/
     
     try{
-    document.getElementById("heatmapLoadingDiv").style.display = "block";
-
-    document.getElementById("HEATMAP_LABEL").style.opacity = 0.2;
-    document.getElementById("HEATMAP_CC").style.opacity = 0.2;
-    document.getElementById("HEATMAP_OncospliceClusters").style.opacity = 0.2;
-    document.getElementById("HEATMAP_0").style.opacity = 0.2;
-    document.getElementById("HEATMAP_ROW_LABEL").style.opacity = 0.2;}
+    beginHeatmapLoadingSession(arg);}
     catch(err)
     {
       console.log(err);
@@ -41,10 +45,10 @@ function updateHeatmapData(arg, targeturl)
     }
     postData["data"]["coords"] = arg["coords"];
     postData["data"]["signatures"] = arg["signature"];
-    exportView["single"] = arg["signature"];
     postData["data"]["genes"] = arg["genes"];
     console.log("postLog", postData);
 
+    var heatmapRequestStart = performance.now();
     axios({
         method: "post",
         url: routeurl.concat("/api/datasets/heatmapData"),
@@ -52,6 +56,11 @@ function updateHeatmapData(arg, targeturl)
         headers: { "Content-Type": "application/json" },
       })
     .then(function (response) {
+        logRequestDuration("/api/datasets/heatmapData", heatmapRequestStart);
+        setHeatmapLoadingProgress({
+          percent: 40,
+          status: "Fetching sample metadata...",
+        });
         //console.log("full return from heatmap: ", response)
         //document.getElementById("LoadingStatusDisplay").style.display = "none";
         //document.getElementById("heatmapLoadingDiv").style.display = "none";
@@ -72,18 +81,17 @@ function updateHeatmapData(arg, targeturl)
         else
         {
           try{
-            document.getElementById("HEATMAP_LABEL").style.opacity = 1;
-            document.getElementById("HEATMAP_CC").style.opacity = 1;
-            document.getElementById("HEATMAP_OncospliceClusters").style.opacity = 1;
-            document.getElementById("HEATMAP_0").style.opacity = 1;
-            document.getElementById("HEATMAP_ROW_LABEL").style.opacity = 1;
-            document.getElementById("heatmapLoadingDiv").style.display = "none";
+            document.getElementById("HEATMAP_LABEL").style.visibility = "visible";
+            document.getElementById("HEATMAP_CC").style.visibility = "visible";
+            document.getElementById("HEATMAP_OncospliceClusters").style.visibility = "visible";
+            document.getElementById("HEATMAP_ROW_LABEL").style.visibility = "visible";
           }
           catch(err)
           {
             console.log(err);
           }
-          document.getElementById("initialHeatmapLoadingDiv").style.display = "none";
+          resetHeatmapLoadingProgress();
+          setHeatmapCoreLoading(false);
           alert("no entries found!");
         }
     })
@@ -92,7 +100,8 @@ function updateHeatmapData(arg, targeturl)
 
 function sampleUiRefresh(cancerType, heatmapMatrix, sampleNames, hierarchicalClusterColumns, oncospliceSignatureClusterColumns, oncospliceSignatureClusterName, exportView, callback, prevPostData, pancancercallback, setSampleListState, heatmapQuery)
 {
-    var postdata = {"data": {"cancerName": cancerType, "signature": prevPostData["data"]["signatures"]}};
+    var postdata = {"data": {"cancerName": cancerType, "signature": prevPostData["data"]["signatures"], "includePancancer": isPancancerPage()}};
+    var samplesRequestStart = performance.now();
     axios({
       method: "post",
       data: postdata,
@@ -100,29 +109,23 @@ function sampleUiRefresh(cancerType, heatmapMatrix, sampleNames, hierarchicalClu
       headers: { "Content-Type": "application/json" },
     })
     .then(function (response) {
+      logRequestDuration("/api/datasets/samples", samplesRequestStart);
+      setHeatmapLoadingProgress({
+        percent: 55,
+        status: "Building heatmap...",
+      });
       //console.log("full retrun from ui response: ", response)
       exportView["cancer"] = cancerType;
       exportView["ui_field_dict"] = response["data"]["samples"];
       exportView["ui_field_range"] = response["data"]["range"];
       exportView["heatmapQuery"] = heatmapQuery;
+      exportView["single"] = prevPostData["data"]["signatures"];
       console.log("sampleNames", response["data"]["samples"])
       //document.getElementById("h3").style.display = "none";
-      try{
-        document.getElementById("HEATMAP_LABEL").style.opacity = 1;
-        document.getElementById("HEATMAP_CC").style.opacity = 1;
-        document.getElementById("HEATMAP_OncospliceClusters").style.opacity = 1;
-        document.getElementById("HEATMAP_0").style.opacity = 1;
-        document.getElementById("HEATMAP_ROW_LABEL").style.opacity = 1;
-        document.getElementById("heatmapLoadingDiv").style.display = "none";
-      }
-      catch(err)
-      {
-        console.log(err);
-      }
-      document.getElementById("initialHeatmapLoadingDiv").style.display = "none";
-      //console.log("updating view panel with: ", cancerType, heatmapMatrix, sampleNames, hierarchicalClusterColumns, oncospliceSignatureClusterColumns, oncospliceSignatureClusterName, exportView, prevPostData)
       callback(heatmapMatrix, sampleNames, hierarchicalClusterColumns, oncospliceSignatureClusterColumns, oncospliceSignatureClusterName, exportView);
-      pancancercallback({"DEtableData": response["data"]["pancancerDE"], "tableData": response["data"]["pancancersignature"], "clusterLength": response["data"]["uniqueclusters"], "cancer": cancerType, "uniqueGenesPerSignature": response["data"]["pancancerGeneCount"]});
+      if (typeof pancancercallback === "function" && isPancancerPage()) {
+        pancancercallback({"DEtableData": response["data"]["pancancerDE"], "tableData": response["data"]["pancancersignature"], "clusterLength": response["data"]["uniqueclusters"], "cancer": cancerType, "uniqueGenesPerSignature": response["data"]["pancancerGeneCount"]});
+      }
       setSampleListState(response["data"]["samples"]);
     })
 

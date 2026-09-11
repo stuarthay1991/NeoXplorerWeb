@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
-import { isBuild } from '../utilities/constants.js';
+import { apiBaseUrl } from '../utilities/constants.js';
 
-var routeurl = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
+var routeurl = apiBaseUrl;
 
 //Assign signature to list of UIDs
 function mergeSignatures(name, currentListOfUIDs, completeListOfUIDs)

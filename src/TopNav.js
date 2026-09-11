@@ -13,7 +13,7 @@ import pubicon from './images/pub.png';
 
 function TopNav() {
   const classes = useStyles();
-  var oncoimg = isBuild ? <img src="/ICGS/Oncosplice/neo/OncoLOGO2.png" alt="Logo" width="202" height="50"></img> : <img src={oncologo} alt="Logo" width="202" height="50"></img>;
+  var oncoimg = isBuild ? <img src="/ICGS/Oncosplice/smart/OncoLOGO2.png" alt="Logo" width="202" height="50"></img> : <img src={oncologo} alt="Logo" width="202" height="50"></img>;
 
   const [maskPage, setMaskPage] = React.useState({"name": "data"});
 

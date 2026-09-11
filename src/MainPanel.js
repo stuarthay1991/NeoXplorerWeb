@@ -22,10 +22,11 @@ import ViewPanelWrapper from './ViewPanelWrapper.js';
 import ChatWindow from './chat/chatwindow.js';
 import { applyHeatmapRowSelection } from './ViewPanel.js';
 import { makeRequest } from './request/CancerDataManagement.js';
+import { beginHeatmapLoadingSession } from './heatmapLoadingState.js';
 //import Authentication from './Authentication.js';
 import PanCancerAnalysis from './PanCancerAnalysis.js';
 import TableForHeatmapSelect from './TableForHeatmapSelect.js';
-import { isBuild } from './utilities/constants.js';
+import { isBuild, apiBaseUrl } from './utilities/constants.js';
 import loadingGif from './images/loading.gif';
 
 const spcTabStyles = makeStyles({
@@ -59,14 +60,14 @@ function none()
 function MainPanel(props){
   const classes = useStyles();
   const tabstyle = spcTabStyles();
-  const chatApiBase = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
+  const chatApiBase = apiBaseUrl;
 
   //What is crucial here is the item "page." This contains the appendage to the base url that dictates what part of the website to view.
   const { match, history } = props;
   const { params } = match;
   const { page, options, signature, simple, gene, coord } = params;
 
-  var loading_Gif = isBuild ? <img src="/ICGS/Oncosplice/neo/loading.gif" width="200" height="60"></img> : <img src={loadingGif} width="200" height="60"></img>;
+  var loading_Gif = isBuild ? <img src="/ICGS/Oncosplice/smart/loading.gif" width="200" height="60"></img> : <img src={loadingGif} width="200" height="60"></img>;
 
   console.log("cancer_address", options);
   console.log("signature_address", signature);
@@ -143,7 +144,7 @@ function MainPanel(props){
 
   if(process.env.NODE_ENV == "build")
   {
-    var routeurl = "/ICGS/Oncosplice/neo/index.html/";
+    var routeurl = "/ICGS/Oncosplice/smart/index.html/";
   }
   else
   {
@@ -336,6 +337,7 @@ function MainPanel(props){
       args["callback"] = setViewPane;
       args["setSampleListState"] = setSampleListState;
       args["doc"] = document;
+      beginHeatmapLoadingSession(args);
       makeRequest("updateHeatmapData", args);
 
       var args2 = {};
@@ -404,10 +406,7 @@ function MainPanel(props){
         </div>
         </div>
       </div>
-      <div id="tabcontent" style={{display: mpstate.value === 1 ? displayvalue1 : displayvalue2}}>
-      <div id="initialHeatmapLoadingDiv" style={{display: "block", margin: 20}}>
-        {loading_Gif}
-      </div>
+      <div id="tabcontent" style={{display: mpstate.value === 1 ? displayvalue1 : displayvalue2, minHeight: page === "explore" ? "60vh" : undefined, backgroundColor: page === "explore" ? "#ffffff" : undefined}}>
       {page === 'explore' && <ViewPanelWrapper
         entrydata={mpstate.viewpaneobj}
         validate={indexToTabName[page]}

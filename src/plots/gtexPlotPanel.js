@@ -2,10 +2,10 @@ import Plot from 'react-plotly.js';
 import axios from 'axios';
 import { global_colors } from '../utilities/constants.js';
 import targeturl from '../targeturl.js';
-import { isBuild } from '../utilities/constants.js';
+import { apiBaseUrl } from '../utilities/constants.js';
 import {ExpandedPlotViewButton} from '../components/ExpandedPlotView';
 
-var routeurl = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
+var routeurl = apiBaseUrl;
 
 export function gtexSend(UID, setGtexState, gtexState) {
   var postedData = {"data": {"uid": UID}}

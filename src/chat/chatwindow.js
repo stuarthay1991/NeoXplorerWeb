@@ -1,3 +1,4 @@
+import 'regenerator-runtime/runtime';
 import React, { useState, useEffect, useRef } from 'react';
 import MenuIcon from '@material-ui/icons/Menu';
 import ReactMarkdown from 'react-markdown';
@@ -17,6 +18,50 @@ const WELCOME_TEXT =
   "Hello! I'm the NeoXplorer chatbot assistant! How can I help you today?";
 
 const CHAT_API_PATH = '/api/datasets/chatbot/chat';
+
+/** Parse `{ error }` JSON from failed chat API responses. */
+async function chatFetch(input, init) {
+  const response = await fetch(input, init);
+  if (!response.ok) {
+    const text = await response.text();
+    let message = text || `Chat API HTTP ${response.status}`;
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed.error === 'string' && parsed.error.length > 0) {
+        message = parsed.error;
+      }
+    } catch (parseErr) {
+      // keep raw text / status message
+    }
+    throw new Error(message);
+  }
+  return response;
+}
+
+function formatChatClientError(error, apiUrl) {
+  if (!error) return null;
+  const msg = error.message || String(error);
+  if (msg === 'Failed to fetch' || msg === 'network error') {
+    return {
+      ...error,
+      message:
+        'Cannot reach the NeoXplorer chat API at ' +
+        apiUrl +
+        '. Check Node on port 8083, Apache /smartneoxplorer/ proxy (HTTPS vhost), and Node 18+.',
+    };
+  }
+  if (/^\{.*"error"/.test(msg)) {
+    try {
+      const parsed = JSON.parse(msg);
+      if (parsed && typeof parsed.error === 'string') {
+        return { ...error, message: parsed.error };
+      }
+    } catch (parseErr) {
+      // fall through
+    }
+  }
+  return error;
+}
 
 /** @param {import('ai').UIMessage} message */
 function getUiMessageText(message) {
@@ -286,6 +331,9 @@ function ChatWindowLive({
         parts: [{ type: 'text', text: WELCOME_TEXT }],
       },
     ],
+    onError: (err) => {
+      console.error('[NeoXplorer chat] request failed', { apiUrl, err });
+    },
     onData: (part) => {
       if (part.type === 'data-SetNewSelectionState') {
         console.log('[chat] data-SetNewSelectionState', part.data);
@@ -347,6 +395,7 @@ function ChatWindowLive({
     },
     transport: new DefaultChatTransport({
       api: apiUrl,
+      fetch: chatFetch,
       // Match axios elsewhere: no cross-origin cookies (8080 → 8081).
       // credentials: 'include' requires Access-Control-Allow-Credentials: true on the API.
       prepareSendMessagesRequest: ({ body, messages, id, trigger, messageId }) =>
@@ -387,6 +436,8 @@ function ChatWindowLive({
 
   const busy = status === 'streaming' || status === 'submitted';
 
+  const displayError = formatChatClientError(error, apiUrl);
+
   const handleSubmit = () => {
     const text = input.trim();
     if (!text || busy) return;
@@ -402,7 +453,7 @@ function ChatWindowLive({
       setInput={setInput}
       busy={busy}
       onSubmit={handleSubmit}
-      error={error}
+      error={displayError}
       onDismissError={clearError}
     />
   );

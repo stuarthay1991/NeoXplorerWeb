@@ -9,7 +9,7 @@ import splashHeatmap from './images/splashHeatmap.png';
 import splashPancancer from './images/splashPancancer.png';
 import axios from 'axios';
 import { Nav, Dropdown, Button, ButtonToolbar, IconButton} from "rsuite";
-import { DropdownCancers } from './utilities/constants.js';
+import { apiBaseUrl, DropdownCancers } from './utilities/constants.js';
 import "rsuite/dist/rsuite.min.css";
 
 const boxProps = {
@@ -17,6 +17,7 @@ const boxProps = {
 };
 
 var available_width = window.innerWidth;
+var routeurl = apiBaseUrl;
 
 function splashDataRequest() {
   var bodyFormData = new FormData();

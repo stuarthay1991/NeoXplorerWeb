@@ -5,7 +5,6 @@ import axios from 'axios';
 import uiFields from './uiFields.js';
 import updateSigature from './updateSignature.js';
 import defaultQuery from './defaultQuery.js';
-import fetchHeatmapData from './fetchHeatmapData.js';
 import updateHeatmapData from './updateHeatmapData.js';
 import gene from './gene.js';
 import coord from './coord.js';
@@ -24,7 +23,6 @@ export function makeRequest(to, arg)
 	if(to == "pancancerUiFields"){ pancancerUiFields(arg, targeturl);}
 	if(to == "metaDataField"){ metaDataField(arg, targeturl);}
 	if(to == "signature"){ signature(arg, targeturl);}
-	if(to == "fetchHeatmapData"){ fetchHeatmapData(arg, targeturl);}
   	if(to == "updateHeatmapData"){ updateHeatmapData(arg, targeturl);}
 	if(to == "gene"){ gene(arg, targeturl);}
 	if(to == "coord"){ coord(arg, targeturl);}

@@ -5,7 +5,7 @@ import { isBuild } from '../utilities/constants.js';
 import workflow from '../images/workflow.png';
 
 function AboutUs() {
-    var workflowimg = isBuild ? <img width="66%" height="66%" src={"/ICGS/Oncosplice/neo/workflow.png"} alt="workflow" /> : <img width="66%" height="66%" src={workflow} alt="workflow" />;
+    var workflowimg = isBuild ? <img width="66%" height="66%" src={"/ICGS/Oncosplice/smart/workflow.png"} alt="workflow" /> : <img width="66%" height="66%" src={workflow} alt="workflow" />;
 
 	return(
     <div style={{width: "100%", backgroundColor: "#0f6a8b", position: "relative"}}>

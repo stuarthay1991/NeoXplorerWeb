@@ -1,9 +1,9 @@
 import * as d3 from 'd3';
 import axios from 'axios';
-import { isBuild } from '../utilities/constants.js';
+import { apiBaseUrl } from '../utilities/constants.js';
 import React, { useRef } from "react";
 import targeturl from '../targeturl.js';
-var routeurl = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
+var routeurl = apiBaseUrl;
 
 function retrieveDataForVenn(comparedSignature, homeSignature, typeFor, setTableState, annot){
   //homeSignature = homeSignature.name;

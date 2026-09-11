@@ -9,5 +9,6 @@ import Grid from '@material-ui/core/Grid';
 import axios from 'axios';
 import '../App.css';
 import loadingGif from '../images/loading.gif';
+import { apiBaseUrl } from '../utilities/constants.js';
 
-var routeurl = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
+var routeurl = apiBaseUrl;

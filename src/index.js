@@ -1,3 +1,4 @@
+import 'regenerator-runtime/runtime';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import targeturl from './targeturl.js';
@@ -21,7 +22,7 @@ function App() {
     module.hot.accept()
   }
 
-  var routeurl = isBuild ? "/ICGS/Oncosplice/neo/index.html" : "/app";
+  var routeurl = isBuild ? "/ICGS/Oncosplice/smart/index.html" : "/app";
   //console.log(process.env.NODE_ENV)
   /*
   if(process.env.NODE_ENV == "production")

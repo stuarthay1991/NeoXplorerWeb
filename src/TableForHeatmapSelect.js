@@ -1,11 +1,11 @@
 import '@fontsource/roboto';
 import React from 'react';
 import MinorTable from './components/MinorTable.js';
-import {isBuild, rootHeatmapTableObj, cancerValueToName} from './utilities/constants.js';
+import {apiBaseUrl, appBaseUrl, rootHeatmapTableObj, cancerValueToName} from './utilities/constants.js';
 import axios from 'axios';
 
-var routeurl = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
-var localAddress = isBuild ? "https://www.altanalyze.org/ICGS/Oncosplice/neo/index.html" : "http://localhost:8080/app";
+var routeurl = apiBaseUrl;
+var localAddress = appBaseUrl;
 
 function setupLinkForHeatmap(cancer, signature){    
     var simplename = signature.substring(4).replace(/_/g, "-");

@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { isBuild } from './utilities/constants.js';
+import { apiBaseUrl } from './utilities/constants.js';
 import * as d3 from 'd3';
 import { jsPDF } from 'jspdf'
 import 'svg2pdf.js'
 
-var routeurl = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
+var routeurl = apiBaseUrl;
 
 //This function transforms the raw data for visualizing transcripts into a downloadable format whereupon it is exported to
 //the user in a .csv file.

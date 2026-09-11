@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 import { Nav, Dropdown, Button, ButtonToolbar, IconButton} from "rsuite";
 export const isBuild = process.env.NODE_ENV === "build";
+export const apiBaseUrl = isBuild ? "https://www.altanalyze.org/smartneoxplorer" : "http://localhost:8083";
+export const appBaseUrl = isBuild ? "https://www.altanalyze.org/ICGS/Oncosplice/smart/index.html" : "http://localhost:8080/app";
 export const global_colors = ["#0096FF", "#fffb00", "#FF7F7F", "#44D62C", "#9300c4", "#f78000", "#828282", "#32a852", "#8e7be3", "#e6b035",
 "#b5109f", "#8bab59", "#782b51", "#366fd9", "#f0b3ff", "#5d1ca3", "#d94907", "#32a8a6", "#ada50c", "#bf1b28", "#0000b3", "#ffc61a", "#336600",
 "#1abc9c","#ff6f61","#2ecc71","#e74c3c","#9b59b6","#f39c12","#16a085","#d35400","#7f8c8d","#c0392b","#2980b9","#27ae60","#f1c40f","#34495e","#8e44ad"];

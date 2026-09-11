@@ -3,6 +3,12 @@ import ReactDOM from 'react-dom';
 import ViewPanel from './ViewPanel.js';
 import useStyles from './css/useStyles.js';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
+import { HeatmapLoadingShell } from './heatmapCoreCode.js';
+import {
+  isHeatmapCoreLoadingActive,
+  registerHeatmapCoreLoadingListener,
+  unregisterHeatmapCoreLoadingListener,
+} from './heatmapLoadingState.js';
 
 //This is a hacky way to transition into the view pane; it is currently vital and in use, but will need to be changed in the future.
 //There should be a more simple and streamlined way to do this; but basically the point of this is that I need to wait for the request
@@ -17,11 +23,14 @@ class ViewPanelWrapper extends React.Component {
       inCC: [],
       inOncospliceClusters: [],
       inTRANS: [],
-      export: []
+      export: [],
+      heatmapLoadingActive: isHeatmapCoreLoadingActive(),
     }
+    this.handleLoadingChange = this.handleLoadingChange.bind(this);
   }
 
-  componentDidMount() {   
+  componentDidMount() {
+    registerHeatmapCoreLoadingListener(this.handleLoadingChange);
     if(this.props.entrydata != undefined)
     {
         this.setState({
@@ -32,6 +41,16 @@ class ViewPanelWrapper extends React.Component {
         inTRANS: this.props.entrydata["inTRANS"],
         export: this.props.entrydata["export"]
         });
+    }
+  }
+
+  componentWillUnmount() {
+    unregisterHeatmapCoreLoadingListener(this.handleLoadingChange);
+  }
+
+  handleLoadingChange(loading) {
+    if (loading !== this.state.heatmapLoadingActive) {
+      this.setState({ heatmapLoadingActive: loading });
     }
   }
 
@@ -73,9 +92,24 @@ class ViewPanelWrapper extends React.Component {
     {
       alert("Submission failed! Please try again!");
     }
+    var isExploreTab = this.props.validate == 1;
+    var hasData = this.state.heatmapInputData.length > 0;
+    var showLoadingShell = isExploreTab && this.state.heatmapLoadingActive && !hasData;
+    var showViewPanel = isExploreTab && hasData;
     return(
-      <div>
-        {this.state.heatmapInputData.length > 0 && this.props.validate == 1 && this.state.heatmapInputData != undefined && (
+      <div style={{ minHeight: showLoadingShell ? "55vh" : undefined, backgroundColor: "#ffffff" }}>
+        {showLoadingShell && (
+          <HeatmapLoadingShell
+            cols={[]}
+            cc={[]}
+            oncospliceClusters={{}}
+            labelState={this.props.okmapLabelState}
+            rowData={[]}
+            xscale={0}
+            clusterName=""
+          />
+        )}
+        {showViewPanel && (
           <ViewPanel  css={withStyles(useStyles)} 
                       QueryExport={this.state.export} 
                       Data={this.state.heatmapInputData} 

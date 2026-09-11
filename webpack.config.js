@@ -11,7 +11,10 @@ module.exports = function(_env, argv) {
 
   return {
     devtool: isDevelopment && "cheap-module-source-map",
-    entry: "./src/index.js",
+    entry: [
+      require.resolve("regenerator-runtime/runtime"),
+      "./src/index.js",
+    ],
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: "app.js",
@@ -21,7 +24,7 @@ module.exports = function(_env, argv) {
       rules: [
         {
           test: /\.jsx?$/,
-          exclude: /node_modules/,
+          exclude: /node_modules\/(?!(ai|@ai-sdk)\/).*/,
           use: {
             loader: "babel-loader",
             options: {
@@ -77,7 +80,10 @@ module.exports = function(_env, argv) {
           isProduction ? "production" : "development"
         )
       }),
-      new webpack.ProvidePlugin({ React: "react", }),
+      new webpack.ProvidePlugin({
+        React: "react",
+        regeneratorRuntime: "regenerator-runtime",
+      }),
       new webpack.HotModuleReplacementPlugin(),
     ].filter(Boolean),
     stats: {

@@ -1,7 +1,11 @@
 import axios from 'axios';
-import { isBuild } from '../utilities/constants.js';
+import { apiBaseUrl } from '../utilities/constants.js';
 
-var routeurl = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
+var routeurl = apiBaseUrl;
+
+function isPancancerPage() {
+  return /\/pancancer(\/|$)/.test(window.location.pathname);
+}
 
 function uiFields(arg, targeturl)
 {
@@ -11,7 +15,7 @@ function uiFields(arg, targeturl)
 	const pancancercallback = arg["pancancerupdate"];
 	const signature = arg["signature"];
   	//console.log("cancername", cancername);
-	var postdata = {"data": {"cancerName": cancername, "signature": signature}};
+	var postdata = {"data": {"cancerName": cancername, "signature": signature, "includePancancer": isPancancerPage()}};
 	const callback = arg["callback"];
   	//console.log("post data", postdata);
 	axios({
@@ -28,7 +32,9 @@ function uiFields(arg, targeturl)
 		console.log("fer2", response["data"]["uniqueclusters"]);
 		//console.log("pctable", response["data"]);
 		callback(samples);
-		pancancercallback({"DEtableData": response["data"]["pancancerDE"], "tableData": response["data"]["pancancersignature"], "clusterLength": response["data"]["uniqueclusters"], "cancer": cancername, "uniqueGenesPerSignature": response["data"]["pancancerGeneCount"]});
+		if (typeof pancancercallback === "function" && isPancancerPage()) {
+			pancancercallback({"DEtableData": response["data"]["pancancerDE"], "tableData": response["data"]["pancancersignature"], "clusterLength": response["data"]["uniqueclusters"], "cancer": cancername, "uniqueGenesPerSignature": response["data"]["pancancerGeneCount"]});
+		}
 	});
 }
 

@@ -2,12 +2,12 @@ import '@fontsource/roboto';
 import React from 'react';
 import MajorTable from './components/MajorTable.js';
 import MinorTable from './components/MinorTable.js';
-import {isBuild, rootTableColumnSpliceObj, rootTableColumnGeneObj, BLCA_vals, tableStyledDiv, rootTableTableObj, cancerValueToName} from './utilities/constants.js';
+import {apiBaseUrl, appBaseUrl, rootTableColumnSpliceObj, rootTableColumnGeneObj, BLCA_vals, tableStyledDiv, rootTableTableObj, cancerValueToName} from './utilities/constants.js';
 import axios from 'axios';
 //import { isBuild } from './utilities/constants.js';
 
-var routeurl = isBuild ? "https://www.altanalyze.org/neoxplorer" : "http://localhost:8081";
-var localAddress = isBuild ? "https://www.altanalyze.org/ICGS/Oncosplice/neo/index.html" : "http://localhost:8080/app";
+var routeurl = apiBaseUrl;
+var localAddress = appBaseUrl;
 
 function stringSplit(uid)
 {
